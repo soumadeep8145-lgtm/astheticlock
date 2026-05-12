@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CHRONO NEXUS — Temporal Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Audiowide&family=Electrolize&display=swap" rel="stylesheet">
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --bg-primary: #020614;
+            --bg-secondary: #0d1333;
+            --text-primary: #ffffff;
+            --text-secondary: #8899bb;
+            --accent-1: #00ffff;
+            --accent-2: #00ff88;
+            --accent-3: #0088ff;
+            --glass-bg: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.08);
+            --shadow-color: rgba(0,255,255,0.35);
+            --glow-intensity: 1;
+            --font-main: 'Orbitron', monospace;
+            --font-secondary: 'Rajdhani', sans-serif;
+            --aurora-1: #00ffff;
+            --aurora-2: #00ff88;
+            --aurora-3: #4d00ff;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        html, body {
+            width:100%; height:100%;
+            overflow:hidden;
+            font-family: var(--font-secondary);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            position:relative;
+        }
+
+        /* ===== STARTUP SCREEN ===== */
+        #startup-screen {
+            position:fixed; inset:0;
+            background: #020614;
+            display:flex; align-items:center; justify-content:center;
+            z-index:10000;
+            animation: startupFadeOut 0.9s ease-out 2.5s forwards;
+        }
+        @keyframes startupFadeOut {
+            to { opacity:0; visibility:hidden; pointer-events:none; }
+        }
+        .startup-logo { text-align:center; }
+        .startup-logo h1 {
+            font-family: 'Audiowide', cursive;
+            font-size: clamp(2rem,8vw,5rem);
+            background: linear-gradient(90deg, #00ffff, #00ff88, #4d00ff, #ff00ff, #00ffff);
+            background-size: 400% 100%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: startupGrad 3s linear infinite, scaleIn 0.9s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        @keyframes startupGrad { 0%{background-position:0%} 100%{background-position:400%} }
+        @keyframes scaleIn { from{transform:scale(0.4) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+        .startup-sub {
+            font-family: var(--font-secondary); letter-spacing:5px; text-transform:uppercase;
+            font-size:clamp(0.7rem,1.5vw,0.95rem); color:#4466aa; margin-top:1rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .startup-line {
+            width:0; height:2px; margin:1.2rem auto 0;
+            background:linear-gradient(90deg,transparent,#00ffff,#00ff88,transparent);
+            animation: lineExpand 1.2s ease-out 0.5s forwards;
+        }
+        @keyframes lineExpand { to{width:60%} }
+        @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+        /* ===== APP WRAPPER ===== */
+        #app {
+            width:100%; height:100%; position:relative;
+            opacity:0; animation: appFadeIn 1s ease-out 2.8s forwards;
+        }
+        @keyframes appFadeIn { to{opacity:1} }
+
+        /* ===== CINEMATIC BACKGROUND SYSTEM ===== */
+        .bg-master {
+            position:fixed; inset:0; z-index:1;
+            overflow:hidden;
+        }
+
+        /* Deep space base */
+        .bg-base {
+            position:absolute; inset:0;
+            background: radial-gradient(ellipse at 50% 0%, #0a1535 0%, #040b1e 50%, #020614 100%);
+            transition: background 1s ease;
+        }
+
+        /* Aurora waves — large flowing gradients */
+        .aurora-layer {
+            position:absolute; inset:-50%;
+            width:200%; height:200%;
+            animation: auroraDrift 18s ease-in-out infinite;
+            pointer-events:none;
+        }
+        .aurora-layer::before {
+            content:'';
+            position:absolute; inset:0;
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(0,255,200,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(80,0,255,0.10) 0%, transparent 65%),
+                radial-gradient(ellipse 90% 35% at 50% 80%, rgba(0,120,255,0.08) 0%, transparent 60%);
+            animation: auroraPulse 8s ease-in-out infinite alternate;
+        }
+        .aurora-layer::after {
+            content:'';
+            position:absolute; inset:0;
+            background:
+                radial-gradient(ellipse 70% 30% at 70% 50%, rgba(0,255,140,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 60% at 30% 20%, rgba(0,200,255,0.09) 0%, transparent 55%);
+            animation: auroraPulse2 12s ease-in-out infinite alternate;
+        }
+        @keyframes auroraDrift {
+            0%,100%{transform:translate(0,0) rotate(0deg) scale(1)}
+            25%{transform:translate(3%,2%) rotate(1deg) scale(1.02)}
+            50%{transform:translate(-2%,4%) rotate(-1deg) scale(1.04)}
+            75%{transform:translate(4%,-2%) rotate(0.5deg) scale(1.01)}
+        }
+        @keyframes auroraPulse {
+            from{opacity:0.6} to{opacity:1}
+        }
+        @keyframes auroraPulse2 {
+            from{opacity:0.5} to{opacity:0.9}
+        }
+
+        /* Fog / soft depth layers */
+        .fog-layer {
+            position:absolute; inset:0;
+            background:
+                radial-gradient(ellipse 120% 60% at 50% 100%, rgba(0,30,60,0.6) 0%, transparent 70%),
+                radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,10,30,0.5) 0%, transparent 60%);
+            pointer-events:none;
+        }
+
+        /* Neon energy streaks */
+        .streak-layer {
+            position:absolute; inset:0; overflow:hidden; pointer-events:none;
+        }
+        .streak {
+            position:absolute;
+            height:1px;
+            background: linear-gradient(90deg, transparent, var(--accent-1), transparent);
+            opacity:0;
+            animation: streakMove var(--dur, 8s) ease-in-out var(--delay, 0s) infinite;
+        }
+        @keyframes streakMove {
+            0%{transform:translateX(-100%) scaleX(0.3); opacity:0}
+            10%{opacity:0.6}
+            90%{opacity:0.2}
+            100%{transform:translateX(200%) scaleX(1.5); opacity:0}
+        }
+
+        /* Ambient floating orbs */
+        .orb-layer {
+            position:absolute; inset:0; pointer-events:none;
+        }
+        .orb {
+            position:absolute;
+            border-radius:50%;
+            filter:blur(60px);
+            animation: orbFloat var(--dur,20s) ease-in-out var(--delay,0s) infinite alternate;
+            opacity:0.15;
+        }
+        @keyframes orbFloat {
+            from{transform:translate(0,0) scale(1)}
+            to{transform:translate(var(--tx,30px),var(--ty,20px)) scale(var(--sc,1.1))}
+        }
+
+        /* Glass reflection shimmer */
+        .shimmer-layer {
+            position:absolute; inset:0; pointer-events:none;
+            background: repeating-linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 49%,
+                rgba(255,255,255,0.012) 49.5%,
+                transparent 50%
+            );
+            animation: shimmerShift 25s linear infinite;
+        }
+        @keyframes shimmerShift { from{background-position:0 0} to{background-position:1000px 0} }
+
+        /* Grid overlay — subtle tech feel */
+        .grid-layer {
+            position:absolute; inset:0; pointer-events:none;
+            background-image:
+                linear-gradient(rgba(0,200,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,255,0.025) 1px, transparent 1px);
+            background-size: 80px 80px;
+            animation: gridPulse 6s ease-in-out infinite;
+        }
+        @keyframes gridPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+        /* Energy pulse rings emanating from center */
+        .pulse-layer {
+            position:absolute; inset:0; pointer-events:none;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .pulse-ring {
+            position:absolute;
+            border:1px solid var(--accent-1);
+            border-radius:50%;
+            width:var(--size,200px); height:var(--size,200px);
+            opacity:0;
+            animation: ringPulse var(--dur,6s) ease-out var(--delay,0s) infinite;
+        }
+        @keyframes ringPulse {
+            0%{transform:scale(0.2);opacity:0.5}
+            100%{transform:scale(5);opacity:0}
+        }
+
+        /* ===== PARTICLE CANVAS ===== */
+        #particles {
+            position:fixed; inset:0; z-index:2; pointer-events:none;
+        }
+
+        /* ===== MOUSE GLOW ===== */
+        .mouse-glow {
+            position:fixed; width:400px; height:400px;
+            background:radial-gradient(circle, var(--accent-1) 0%, transparent 70%);
+            pointer-events:none; z-index:3; opacity:0.12;
+            transform:translate(-50%,-50%);
+            transition:opacity 0.3s ease;
+            filter:blur(2px);
+        }
+
+        /* ===== CONTENT WRAPPER ===== */
+        .content-wrapper {
+            position:relative; z-index:10;
+            width:100%; height:100%;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            padding:clamp(1rem,3vw,2rem);
+        }
+
+        /* ===== MODE TABS ===== */
+        .mode-tabs {
+            position:absolute; top:clamp(1rem,3vh,2rem); left:50%;
+            transform:translateX(-50%);
+            display:flex; gap:clamp(0.3rem,1.5vw,0.6rem); z-index:100;
+            background: rgba(4,12,35,0.7);
+            backdrop-filter:blur(30px) saturate(1.5);
+            border-radius:50px; padding:clamp(0.25rem,0.8vw,0.4rem);
+            border:1px solid rgba(0,200,255,0.15);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,255,255,0.05) inset;
+        }
+        .mode-tab {
+            padding:clamp(0.5rem,1.5vw,0.75rem) clamp(0.9rem,2.5vw,1.4rem);
+            background:transparent; border:1px solid transparent; border-radius:50px;
+            color:var(--text-secondary); font-family:var(--font-secondary);
+            font-size:clamp(0.65rem,1.6vw,0.95rem); font-weight:600;
+            cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+            text-transform:uppercase; letter-spacing:2px;
+        }
+        .mode-tab:hover { color:var(--accent-1); background:rgba(0,255,255,0.07); }
+        .mode-tab.active {
+            background:linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color:#000; font-weight:700;
+            box-shadow:0 0 25px var(--shadow-color), 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        /* ===== CLOCK MODE ===== */
+        .clock-container {
+            text-align:center; width:100%;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            gap:clamp(0.8rem,2.5vh,1.8rem);
+        }
+        .greeting {
+            font-family:var(--font-secondary);
+            font-size:clamp(0.75rem,2.5vw,1.3rem);
+            color:var(--accent-2); font-weight:600;
+            text-transform:uppercase; letter-spacing:6px;
+            opacity:0.8; animation:fadeInUp 0.6s ease-out;
+        }
+        .clock-display {
+            font-family:var(--font-main); font-weight:900;
+            font-size:clamp(3.5rem,16vw,13rem); line-height:1;
+            background:linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 60%, var(--accent-3) 100%);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+            filter:drop-shadow(0 0 calc(35px * var(--glow-intensity)) var(--shadow-color));
+            animation:breathe 5s ease-in-out infinite;
+            letter-spacing:clamp(0.05rem,0.4vw,0.25rem); white-space:nowrap;
+        }
+        @keyframes breathe {
+            0%,100%{transform:scale(1); filter:drop-shadow(0 0 calc(35px * var(--glow-intensity)) var(--shadow-color))}
+            50%{transform:scale(1.018); filter:drop-shadow(0 0 calc(55px * var(--glow-intensity)) var(--shadow-color))}
+        }
+        .date-display {
+            font-family:var(--font-secondary);
+            font-size:clamp(0.8rem,2.5vw,1.5rem);
+            color:var(--text-secondary); font-weight:300; letter-spacing:3px;
+        }
+        @keyframes fadeInUp {
+            from{opacity:0;transform:translateY(15px)} to{opacity:0.8;transform:translateY(0)}
+        }
+
+        /* ===== STOPWATCH MODE — LUXURY REDESIGN ===== */
+        .stopwatch-container {
+            display:none; flex-direction:column;
+            align-items:center; gap:clamp(1.5rem,4vh,3rem); width:100%;
+        }
+        .stopwatch-container.active { display:flex; }
+
+        /* Main stopwatch display wrapper */
+        .sw-display-wrapper {
+            display:flex; align-items:baseline; justify-content:center;
+            gap:0; position:relative;
+        }
+
+        /* HH:MM:SS — large digits */
+        .sw-main {
+            font-family:var(--font-main); font-weight:900;
+            font-size:clamp(3rem,12vw,10rem); line-height:1;
+            background:linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+            filter:drop-shadow(0 0 calc(30px * var(--glow-intensity)) var(--shadow-color));
+            letter-spacing:clamp(0.05rem,0.3vw,0.2rem);
+            white-space:nowrap;
+        }
+
+        /* Milliseconds — elegant separate section */
+        .sw-ms-wrapper {
+            display:flex; flex-direction:column;
+            align-items:flex-start; justify-content:flex-end;
+            padding-bottom:clamp(0.3rem,0.8vw,0.6rem);
+            margin-left:clamp(0.4rem,1vw,0.7rem);
+        }
+        .sw-ms-dot {
+            font-family:var(--font-main); font-weight:700;
+            font-size:clamp(1.5rem,5.5vw,5rem);
+            background:linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+            opacity:0.5; line-height:1;
+        }
+        .sw-ms-digits {
+            display:flex; flex-direction:column; align-items:flex-start;
+        }
+        .sw-ms-label {
+            font-family:var(--font-secondary); font-size:clamp(0.5rem,1.2vw,0.75rem);
+            color:var(--accent-1); letter-spacing:3px; text-transform:uppercase;
+            opacity:0.5; line-height:1; margin-bottom:2px;
+        }
+        .sw-ms-value {
+            font-family:var(--font-main); font-weight:700;
+            font-size:clamp(1.2rem,4.5vw,4rem); line-height:1;
+            background:linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+            filter:drop-shadow(0 0 calc(15px * var(--glow-intensity)) var(--shadow-color));
+            min-width:clamp(2.2rem,8vw,6rem);
+            font-variant-numeric: tabular-nums;
+            transition:opacity 0.05s ease;
+        }
+
+        /* Separator line between main and ms */
+        .sw-separator {
+            width:1px; height:clamp(2rem,7vw,6rem);
+            background:linear-gradient(to bottom, transparent, var(--accent-1), transparent);
+            margin:0 clamp(0.4rem,1vw,0.8rem) clamp(0.4rem,1vw,0.6rem);
+            opacity:0.3; align-self:flex-end;
+        }
+
+        /* Precision bar — animated millisecond progress */
+        .sw-precision-bar {
+            width:clamp(200px,60vw,500px); height:3px;
+            background:rgba(255,255,255,0.05); border-radius:2px;
+            overflow:hidden; position:relative;
+        }
+        .sw-precision-fill {
+            height:100%; width:0%;
+            background:linear-gradient(90deg, var(--accent-3), var(--accent-1), var(--accent-2));
+            border-radius:2px;
+            box-shadow:0 0 10px var(--accent-1);
+            transition:width 0.05s linear;
+        }
+
+        /* Digit flip animation for stopwatch */
+        @keyframes digitFlip {
+            0%{transform:translateY(-4px);opacity:0.7}
+            100%{transform:translateY(0);opacity:1}
+        }
+        .sw-main.tick { animation:digitTick 0.1s ease-out; }
+        @keyframes digitTick {
+            0%{filter:drop-shadow(0 0 calc(50px * var(--glow-intensity)) var(--shadow-color)) brightness(1.3)}
+            100%{filter:drop-shadow(0 0 calc(30px * var(--glow-intensity)) var(--shadow-color)) brightness(1)}
+        }
+
+        /* Stopwatch controls */
+        .stopwatch-controls {
+            display:flex; gap:clamp(0.7rem,2vw,1.3rem);
+            flex-wrap:wrap; justify-content:center;
+        }
+        .stopwatch-btn {
+            padding:clamp(0.7rem,1.8vw,1rem) clamp(1.3rem,3.5vw,2.2rem);
+            background:rgba(4,12,35,0.6);
+            backdrop-filter:blur(20px);
+            border:1px solid rgba(0,255,255,0.2); border-radius:50px;
+            color:var(--accent-1); font-family:var(--font-secondary);
+            font-size:clamp(0.8rem,1.8vw,1.1rem); font-weight:700;
+            cursor:pointer; transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+            text-transform:uppercase; letter-spacing:2px;
+            position:relative; overflow:hidden;
+        }
+        .stopwatch-btn::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            opacity:0; transition:opacity 0.25s ease;
+        }
+        .stopwatch-btn span { position:relative; z-index:1; }
+        .stopwatch-btn:hover { color:#000; transform:translateY(-3px); box-shadow:0 12px 35px var(--shadow-color); border-color:transparent; }
+        .stopwatch-btn:hover::before { opacity:1; }
+        .stopwatch-btn:active { transform:translateY(-1px); }
+
+        /* Laps */
+        .laps-container {
+            max-height:28vh; overflow-y:auto;
+            width:100%; max-width:550px;
+            background:rgba(4,12,35,0.5);
+            backdrop-filter:blur(25px);
+            border:1px solid var(--glass-border); border-radius:20px;
+            padding:clamp(0.7rem,2vw,1.2rem);
+        }
+        .lap-item {
+            padding:clamp(0.45rem,1.2vw,0.7rem) clamp(0.5rem,1.5vw,0.8rem);
+            border-bottom:1px solid rgba(255,255,255,0.05);
+            display:flex; justify-content:space-between;
+            font-family:var(--font-main); font-size:clamp(0.7rem,1.6vw,0.9rem);
+            color:var(--text-secondary); animation:lapSlideIn 0.3s ease-out;
+        }
+        @keyframes lapSlideIn {
+            from{transform:translateY(-10px);opacity:0} to{transform:translateY(0);opacity:1}
+        }
+        .lap-item:last-child { border-bottom:none; }
+        .lap-item .lap-num { color:var(--accent-1); opacity:0.7; }
+        .lap-item .lap-time { color:var(--text-primary); font-weight:700; letter-spacing:1px; }
+
+        /* ===== TIMER MODE ===== */
+        .timer-container {
+            display:none; flex-direction:column;
+            align-items:center; gap:clamp(1.5rem,4vh,3rem); width:100%;
+        }
+        .timer-container.active { display:flex; }
+        .timer-display {
+            font-family:var(--font-main); font-weight:900;
+            font-size:clamp(3rem,13vw,11rem); line-height:1;
+            background:linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+            filter:drop-shadow(0 0 calc(30px * var(--glow-intensity)) var(--shadow-color));
+            letter-spacing:clamp(0.05rem,0.4vw,0.25rem);
+        }
+        .timer-inputs {
+            display:flex; gap:clamp(0.5rem,2vw,1rem);
+            flex-wrap:wrap; justify-content:center; align-items:center;
+        }
+        .timer-input-group {
+            display:flex; flex-direction:column;
+            align-items:center; gap:0.4rem;
+        }
+        .timer-input-group label {
+            font-family:var(--font-secondary); font-size:clamp(0.65rem,1.5vw,0.85rem);
+            color:var(--text-secondary); text-transform:uppercase; letter-spacing:2px;
+        }
+        .timer-input {
+            width:clamp(3rem,9vw,5rem);
+            padding:clamp(0.45rem,1.2vw,0.7rem);
+            background:rgba(4,12,35,0.6);
+            backdrop-filter:blur(20px);
+            border:1px solid rgba(0,255,255,0.2); border-radius:12px;
+            color:var(--text-primary); font-family:var(--font-main);
+            font-size:clamp(1rem,2.5vw,1.4rem); text-align:center;
+            transition:all 0.3s ease;
+        }
+        .timer-input:focus { outline:none; border-color:var(--accent-1); box-shadow:0 0 20px var(--shadow-color); }
+        .timer-controls {
+            display:flex; gap:clamp(0.7rem,2vw,1.3rem);
+            flex-wrap:wrap; justify-content:center;
+        }
+        .timer-btn {
+            padding:clamp(0.7rem,1.8vw,1rem) clamp(1.3rem,3.5vw,2.2rem);
+            background:rgba(4,12,35,0.6); backdrop-filter:blur(20px);
+            border:1px solid rgba(0,255,255,0.2); border-radius:50px;
+            color:var(--accent-1); font-family:var(--font-secondary);
+            font-size:clamp(0.8rem,1.8vw,1.1rem); font-weight:700;
+            cursor:pointer; transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+            text-transform:uppercase; letter-spacing:2px;
+            position:relative; overflow:hidden;
+        }
+        .timer-btn::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            opacity:0; transition:opacity 0.25s ease;
+        }
+        .timer-btn span { position:relative; z-index:1; }
+        .timer-btn:hover { color:#000; transform:translateY(-3px); box-shadow:0 12px 35px var(--shadow-color); border-color:transparent; }
+        .timer-btn:hover::before { opacity:1; }
+        .timer-btn:active { transform:translateY(-1px); }
+
+        /* ===== ALARM ===== */
+        .alarm-overlay {
+            position:fixed; inset:0; z-index:9999;
+            background:rgba(200,0,50,0.2);
+            display:none; align-items:center; justify-content:center;
+            animation:alarmFlash 0.6s ease-in-out infinite;
+            backdrop-filter:blur(4px);
+        }
+        .alarm-overlay.active { display:flex; }
+        @keyframes alarmFlash { 0%,100%{background:rgba(200,0,50,0.1)} 50%{background:rgba(255,0,60,0.35)} }
+        .alarm-message {
+            background:rgba(10,3,20,0.85);
+            backdrop-filter:blur(40px);
+            border:2px solid rgba(255,30,80,0.6); border-radius:30px;
+            padding:clamp(2rem,5vw,4rem); text-align:center;
+            box-shadow:0 0 60px rgba(255,0,60,0.4), 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .alarm-message h2 {
+            font-family:var(--font-main); font-size:clamp(1.5rem,5vw,3rem);
+            color:#ff2050; margin-bottom:1.2rem; text-transform:uppercase;
+            animation:alarmTextPulse 0.6s ease-in-out infinite;
+        }
+        @keyframes alarmTextPulse { 0%,100%{opacity:1;text-shadow:0 0 20px rgba(255,30,80,0.8)} 50%{opacity:0.7;text-shadow:0 0 40px rgba(255,30,80,1)} }
+        .alarm-dismiss {
+            padding:clamp(0.7rem,2vw,1rem) clamp(2rem,5vw,3rem);
+            background:linear-gradient(135deg,#ff1040,#cc0030); border:none; border-radius:50px;
+            color:#fff; font-family:var(--font-secondary);
+            font-size:clamp(0.9rem,2vw,1.2rem); font-weight:700;
+            cursor:pointer; transition:all 0.3s ease; text-transform:uppercase; letter-spacing:2px;
+        }
+        .alarm-dismiss:hover { background:linear-gradient(135deg,#ff3060,#ee0040); transform:scale(1.05); box-shadow:0 10px 30px rgba(255,0,60,0.5); }
+
+        /* ===== CONTROL PANEL ===== */
+        .control-panel {
+            position:fixed; bottom:clamp(1rem,3vh,2rem); right:clamp(1rem,3vw,2rem); z-index:200;
+        }
+        .control-toggle {
+            width:clamp(2.8rem,7vw,3.8rem); height:clamp(2.8rem,7vw,3.8rem);
+            background:rgba(4,12,35,0.7); backdrop-filter:blur(25px);
+            border:1px solid rgba(0,255,255,0.25); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+            box-shadow:0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(0,255,255,0.1);
+        }
+        .control-toggle::before { content:'⚙'; font-size:clamp(1.3rem,3.5vw,1.8rem); color:var(--accent-1); transition:all 0.35s ease; }
+        .control-toggle:hover { background:var(--accent-1); transform:rotate(90deg) scale(1.1); box-shadow:0 12px 40px var(--shadow-color); }
+        .control-toggle:hover::before { color:#000; }
+        .control-menu {
+            position:absolute; bottom:clamp(3.5rem,9vh,4.8rem); right:0;
+            background:rgba(3,9,28,0.88); backdrop-filter:blur(40px) saturate(1.5);
+            border:1px solid rgba(0,255,255,0.12); border-radius:22px;
+            padding:clamp(1rem,2.5vw,1.5rem); min-width:clamp(200px,38vw,290px);
+            max-width:90vw; max-height:70vh; overflow-y:auto;
+            box-shadow:0 25px 70px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,255,0.04) inset;
+            display:none; flex-direction:column; gap:clamp(0.8rem,2vw,1.2rem);
+            animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes slideUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+        .control-menu.active { display:flex; }
+        .control-section { display:flex; flex-direction:column; gap:clamp(0.5rem,1.3vw,0.7rem); }
+        .control-section h3 {
+            font-family:var(--font-secondary); font-size:clamp(0.7rem,1.7vw,0.88rem);
+            color:var(--accent-1); text-transform:uppercase; letter-spacing:2px;
+            border-bottom:1px solid rgba(0,255,255,0.1); padding-bottom:0.4rem;
+        }
+        .control-item { display:flex; justify-content:space-between; align-items:center; gap:0.8rem; }
+        .control-label { font-family:var(--font-secondary); font-size:clamp(0.7rem,1.6vw,0.85rem); color:var(--text-secondary); }
+        .control-btn {
+            padding:clamp(0.25rem,0.8vw,0.4rem) clamp(0.5rem,1.5vw,0.85rem);
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px; color:var(--text-primary); font-family:var(--font-secondary);
+            font-size:clamp(0.65rem,1.4vw,0.8rem); cursor:pointer; transition:all 0.25s ease; white-space:nowrap;
+        }
+        .control-btn:hover { background:var(--accent-1); color:#000; border-color:var(--accent-1); }
+        .control-btn.active { background:var(--accent-1); color:#000; border-color:var(--accent-1); }
+        .theme-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr));
+            gap:clamp(0.4rem,1.2vw,0.7rem);
+        }
+        .theme-btn {
+            padding:clamp(0.4rem,1.2vw,0.65rem);
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+            border-radius:12px; color:var(--text-primary); font-family:var(--font-secondary);
+            font-size:clamp(0.65rem,1.4vw,0.8rem); cursor:pointer;
+            transition:all 0.25s ease; text-align:center;
+        }
+        .theme-btn:hover { border-color:var(--accent-1); transform:scale(1.05); }
+        .theme-btn.active { border-color:var(--accent-1); background:rgba(0,255,255,0.12); color:var(--accent-1); }
+        .slider-container { display:flex; align-items:center; gap:0.7rem; width:100%; }
+        .slider {
+            flex:1; -webkit-appearance:none; height:5px;
+            background:rgba(255,255,255,0.1); border-radius:5px; outline:none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance:none; width:16px; height:16px;
+            background:var(--accent-1); border-radius:50%; cursor:pointer; transition:all 0.25s ease;
+        }
+        .slider::-webkit-slider-thumb:hover { background:var(--accent-2); transform:scale(1.3); }
+        .slider::-moz-range-thumb {
+            width:16px; height:16px; background:var(--accent-1);
+            border-radius:50%; cursor:pointer; border:none;
+        }
+        .slider-value { font-family:var(--font-main); font-size:0.8rem; color:var(--accent-1); min-width:2.5rem; text-align:right; }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:768px) {
+            .mode-tabs { width:96%; }
+            .mode-tab { font-size:clamp(0.58rem,2.2vw,0.78rem); padding:0.4rem 0.85rem; }
+        }
+        @media(max-height:500px) {
+            .clock-display { font-size:clamp(2rem,11vw,6rem); }
+            .sw-main { font-size:clamp(2rem,10vw,5.5rem); }
+        }
+        @media(orientation:landscape) and (max-height:600px) {
+            .content-wrapper { padding:0.5rem 1rem; }
+            .clock-container { gap:0.5rem; }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:rgba(0,255,255,0.3); border-radius:10px; }
+
+        /* ===== THEME — BG overrides ===== */
+        .theme-cyberpunk .bg-base {
+            background:radial-gradient(ellipse at 50% 0%, #180030 0%, #0a0018 50%, #050005 100%);
+        }
+        .theme-cyberpunk .aurora-layer::before {
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(255,0,200,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(255,200,0,0.09) 0%, transparent 65%),
+                radial-gradient(ellipse 90% 35% at 50% 80%, rgba(0,255,255,0.07) 0%, transparent 60%);
+        }
+        .theme-amoled .bg-base { background:#000000; }
+        .theme-amoled .aurora-layer::before {
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(0,255,0,0.10) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(0,200,255,0.08) 0%, transparent 65%);
+        }
+        .theme-galaxy .bg-base {
+            background:radial-gradient(ellipse at 50% 0%, #001540 0%, #000d2a 50%, #000510 100%);
+        }
+        .theme-galaxy .aurora-layer::before {
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(80,60,255,0.14) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(255,80,200,0.10) 0%, transparent 65%),
+                radial-gradient(ellipse 90% 35% at 50% 80%, rgba(60,100,255,0.09) 0%, transparent 60%);
+        }
+        .theme-sunset .bg-base {
+            background:radial-gradient(ellipse at 50% 0%, #2a0a00 0%, #1a0500 50%, #0a0200 100%);
+        }
+        .theme-sunset .aurora-layer::before {
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(255,80,0,0.14) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(255,180,0,0.10) 0%, transparent 65%);
+        }
+        .theme-liquid .bg-base {
+            background:radial-gradient(ellipse at 50% 0%, #001828 0%, #000e1c 50%, #000710 100%);
+        }
+        .theme-liquid .aurora-layer::before {
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 60%, rgba(0,160,255,0.14) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(0,220,255,0.11) 0%, transparent 65%),
+                radial-gradient(ellipse 90% 35% at 50% 80%, rgba(0,80,255,0.09) 0%, transparent 60%);
+        }
+
+        .hidden { display:none !important; }
+    </style>
+</head>
+<body>
+
+<!-- STARTUP SCREEN -->
+<div id="startup-screen">
+    <div class="startup-logo">
+        <h1>CHRONO NEXUS</h1>
+        <div class="startup-sub">Initializing Temporal Interface</div>
+        <div class="startup-line"></div>
+    </div>
+</div>
+
+<!-- MAIN APPLICATION -->
+<div id="app">
+
+    <!-- CINEMATIC BACKGROUND -->
+    <div class="bg-master" id="bgMaster">
+        <div class="bg-base" id="bgBase"></div>
+        <div class="aurora-layer" id="auroraLayer"></div>
+        <div class="orb-layer" id="orbLayer"></div>
+        <div class="streak-layer" id="streakLayer"></div>
+        <div class="pulse-layer" id="pulseLayer"></div>
+        <div class="grid-layer"></div>
+        <div class="fog-layer"></div>
+        <div class="shimmer-layer"></div>
+    </div>
+
+    <!-- PARTICLE CANVAS -->
+    <canvas id="particles"></canvas>
+
+    <!-- MOUSE GLOW -->
+    <div class="mouse-glow" id="mouseGlow"></div>
+
+    <!-- CONTENT -->
+    <div class="content-wrapper">
+        <!-- MODE TABS -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="clock">Clock</button>
+            <button class="mode-tab" data-mode="stopwatch">Stopwatch</button>
+            <button class="mode-tab" data-mode="timer">Timer</button>
+        </div>
+
+        <!-- CLOCK MODE -->
+        <div class="clock-container" id="clockMode">
+            <div class="greeting" id="greeting"></div>
+            <div class="clock-display" id="clockDisplay">00:00:00</div>
+            <div class="date-display" id="dateDisplay"></div>
+        </div>
+
+        <!-- STOPWATCH MODE -->
+        <div class="stopwatch-container" id="stopwatchMode">
+            <!-- Main display: HH:MM:SS + ms -->
+            <div class="sw-display-wrapper">
+                <div class="sw-main" id="swMain">00:00:00</div>
+                <div class="sw-separator"></div>
+                <div class="sw-ms-wrapper">
+                    <div class="sw-ms-label">ms</div>
+                    <div class="sw-ms-value" id="swMs">000</div>
+                </div>
+            </div>
+            <!-- Precision bar -->
+            <div class="sw-precision-bar">
+                <div class="sw-precision-fill" id="swPrecisionFill"></div>
+            </div>
+            <!-- Controls -->
+            <div class="stopwatch-controls">
+                <button class="stopwatch-btn" id="stopwatchStart"><span>Start</span></button>
+                <button class="stopwatch-btn" id="stopwatchPause"><span>Pause</span></button>
+                <button class="stopwatch-btn" id="stopwatchReset"><span>Reset</span></button>
+                <button class="stopwatch-btn" id="stopwatchLap"><span>Lap</span></button>
+            </div>
+            <div class="laps-container" id="lapsContainer"></div>
+        </div>
+
+        <!-- TIMER MODE -->
+        <div class="timer-container" id="timerMode">
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-inputs">
+                <div class="timer-input-group">
+                    <label>Hours</label>
+                    <input type="number" class="timer-input" id="timerHours" min="0" max="23" value="0">
+                </div>
+                <div class="timer-input-group">
+                    <label>Minutes</label>
+                    <input type="number" class="timer-input" id="timerMinutes" min="0" max="59" value="0">
+                </div>
+                <div class="timer-input-group">
+                    <label>Seconds</label>
+                    <input type="number" class="timer-input" id="timerSeconds" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="timerStart"><span>Start</span></button>
+                <button class="timer-btn" id="timerPause"><span>Pause</span></button>
+                <button class="timer-btn" id="timerReset"><span>Reset</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALARM OVERLAY -->
+    <div class="alarm-overlay" id="alarmOverlay">
+        <div class="alarm-message">
+            <h2>⏰ TIME'S UP!</h2>
+            <button class="alarm-dismiss" id="alarmDismiss">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- CONTROL PANEL -->
+    <div class="control-panel">
+        <div class="control-toggle" id="controlToggle"></div>
+        <div class="control-menu" id="controlMenu">
+            <div class="control-section">
+                <h3>Themes</h3>
+                <div class="theme-grid">
+                    <button class="theme-btn active" data-theme="aurora">Aurora</button>
+                    <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+                    <button class="theme-btn" data-theme="amoled">AMOLED</button>
+                    <button class="theme-btn" data-theme="galaxy">Galaxy</button>
+                    <button class="theme-btn" data-theme="sunset">Sunset</button>
+                    <button class="theme-btn" data-theme="liquid">Liquid</button>
+                </div>
+            </div>
+            <div class="control-section">
+                <h3>Display</h3>
+                <div class="control-item">
+                    <span class="control-label">Time Format</span>
+                    <button class="control-btn active" id="formatToggle">24H</button>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">Fullscreen</span>
+                    <button class="control-btn" id="fullscreenToggle">OFF</button>
+                </div>
+            </div>
+            <div class="control-section">
+                <h3>Effects</h3>
+                <div class="control-item">
+                    <span class="control-label">Particles</span>
+                    <button class="control-btn active" id="particlesToggle">ON</button>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">Mouse Glow</span>
+                    <button class="control-btn active" id="mouseGlowToggle">ON</button>
+                </div>
+                <div class="control-item">
+                    <span class="control-label">Glow Intensity</span>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="glowSlider" min="0" max="2" step="0.1" value="1">
+                        <span class="slider-value" id="glowValue">1.0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-section">
+                <h3>Font</h3>
+                <div class="control-item">
+                    <button class="control-btn active" id="fontOrbitron">Orbitron</button>
+                    <button class="control-btn" id="fontAudiowide">Audiowide</button>
+                    <button class="control-btn" id="fontElectrolize">Electrolize</button>
+                </div>
+            </div>
+            <div class="control-section">
+                <h3>Audio</h3>
+                <div class="control-item">
+                    <span class="control-label">Sound</span>
+                    <button class="control-btn active" id="soundToggle">ON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===== STATE ===== */
+const state = {
+    currentMode:'clock', is24Hour:true,
+    particlesEnabled:true, mouseGlowEnabled:true,
+    soundEnabled:true, glowIntensity:1,
+    currentTheme:'aurora', currentFont:'Orbitron',
+    stopwatchRunning:false, stopwatchTime:0,
+    stopwatchInterval:null, laps:[],
+    timerRunning:false, timerTime:0,
+    timerInterval:null, timerInitialTime:0,
+    lastSwSeconds:-1
+};
+
+/* ===== CINEMATIC BACKGROUND SYSTEM ===== */
+function buildBackground() {
+    const orbLayer = document.getElementById('orbLayer');
+    const streakLayer = document.getElementById('streakLayer');
+    const pulseLayer = document.getElementById('pulseLayer');
+
+    // Ambient floating orbs
+    const orbDefs = [
+        {w:600,h:600,top:'5%',left:'10%',col:'var(--accent-1)',dur:22,delay:0,tx:'40px',ty:'30px',sc:1.15},
+        {w:500,h:500,top:'60%',left:'70%',col:'var(--accent-2)',dur:28,delay:-8,tx:'-30px',ty:'40px',sc:1.2},
+        {w:400,h:400,top:'30%',left:'80%',col:'var(--accent-3)',dur:19,delay:-4,tx:'-20px',ty:'-25px',sc:1.1},
+        {w:350,h:350,top:'70%',left:'15%',col:'var(--accent-1)',dur:25,delay:-12,tx:'25px',ty:'-35px',sc:1.12},
+        {w:250,h:250,top:'10%',left:'55%',col:'var(--accent-2)',dur:16,delay:-2,tx:'-20px',ty:'20px',sc:1.08},
+    ];
+    orbDefs.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'orb';
+        div.style.cssText = `width:${o.w}px;height:${o.h}px;top:${o.top};left:${o.left};
+            background:radial-gradient(circle, ${o.col} 0%, transparent 70%);
+            --dur:${o.dur}s;--delay:${o.delay}s;--tx:${o.tx};--ty:${o.ty};--sc:${o.sc};`;
+        orbLayer.appendChild(div);
+    });
+
+    // Neon streaks
+    for(let i=0;i<8;i++) {
+        const s = document.createElement('div');
+        s.className = 'streak';
+        const top = 10 + Math.random()*80;
+        const w = 150 + Math.random()*300;
+        const dur = 6 + Math.random()*10;
+        const delay = -(Math.random()*12);
+        s.style.cssText = `top:${top}%;left:0;width:${w}px;
+            --dur:${dur}s;--delay:${delay}s;
+            background:linear-gradient(90deg,transparent,${i%2===0?'var(--accent-1)':'var(--accent-2)'},transparent);`;
+        streakLayer.appendChild(s);
+    }
+
+    // Energy pulse rings
+    for(let i=0;i<4;i++) {
+        const r = document.createElement('div');
+        r.className = 'pulse-ring';
+        const size = 80+i*30;
+        const dur = 7+i*2;
+        const delay = -(i*1.75);
+        r.style.cssText = `--size:${size}px;--dur:${dur}s;--delay:${delay}s;
+            border-color:var(--accent-${(i%3)+1});opacity:0;`;
+        pulseLayer.appendChild(r);
+    }
+}
+
+/* ===== ADVANCED PARTICLE SYSTEM ===== */
+class ParticleSystem {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.shootingStars = [];
+        this.resize();
+        this.init();
+        window.addEventListener('resize', () => { this.resize(); this.particles=[]; this.init(); });
+    }
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+    init() {
+        const count = Math.min(130, Math.floor((this.canvas.width * this.canvas.height) / 8000));
+        const colors = ['rgba(0,255,255,', 'rgba(0,255,136,', 'rgba(0,136,255,', 'rgba(180,100,255,'];
+        for(let i=0;i<count;i++) {
+            this.particles.push({
+                x: Math.random()*this.canvas.width,
+                y: Math.random()*this.canvas.height,
+                vx: (Math.random()-0.5)*0.4,
+                vy: (Math.random()-0.5)*0.4,
+                radius: Math.random()*2 + 0.3,
+                opacity: Math.random()*0.5+0.1,
+                color: colors[Math.floor(Math.random()*colors.length)],
+                twinkleSpeed: 0.005 + Math.random()*0.015,
+                twinkleOffset: Math.random()*Math.PI*2,
+                glow: Math.random() > 0.85  // some particles glow brighter
+            });
+        }
+    }
+    spawnShootingStar() {
+        if(Math.random() > 0.003) return;
+        this.shootingStars.push({
+            x: Math.random()*this.canvas.width*0.7,
+            y: Math.random()*this.canvas.height*0.4,
+            vx: 4+Math.random()*6,
+            vy: 1+Math.random()*2.5,
+            len: 80+Math.random()*120,
+            opacity: 1,
+            life: 1
+        });
+    }
+    update(t) {
+        if(!state.particlesEnabled) return;
+        this.particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0||p.x>this.canvas.width) p.vx*=-1;
+            if(p.y<0||p.y>this.canvas.height) p.vy*=-1;
+            p.opacity = 0.1 + 0.45*(0.5+0.5*Math.sin(t*p.twinkleSpeed+p.twinkleOffset));
+        });
+        this.spawnShootingStar();
+        this.shootingStars = this.shootingStars.filter(s => {
+            s.x+=s.vx; s.y+=s.vy; s.life-=0.03; s.opacity=s.life;
+            return s.life>0;
+        });
+    }
+    draw(t) {
+        this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+        if(!state.particlesEnabled) return;
+
+        // Draw particles
+        this.particles.forEach(p => {
+            if(p.glow) {
+                this.ctx.shadowBlur = 12;
+                this.ctx.shadowColor = p.color+'0.8)';
+            }
+            this.ctx.beginPath();
+            this.ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+            this.ctx.fillStyle = p.color+p.opacity+')';
+            this.ctx.fill();
+            if(p.glow) { this.ctx.shadowBlur=0; this.ctx.shadowColor='transparent'; }
+        });
+
+        // Draw connections
+        this.ctx.lineWidth = 0.5;
+        for(let i=0;i<this.particles.length;i++) {
+            const p1=this.particles[i];
+            for(let j=i+1;j<this.particles.length;j++) {
+                const p2=this.particles[j];
+                const dx=p1.x-p2.x, dy=p1.y-p2.y;
+                const dist=Math.sqrt(dx*dx+dy*dy);
+                if(dist<130) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(p1.x,p1.y);
+                    this.ctx.lineTo(p2.x,p2.y);
+                    this.ctx.strokeStyle = p1.color+(0.12*(1-dist/130))+')';
+                    this.ctx.stroke();
+                }
+            }
+        }
+
+        // Shooting stars
+        this.shootingStars.forEach(s => {
+            const grad = this.ctx.createLinearGradient(s.x,s.y,s.x-s.len,s.y-s.len*0.3);
+            grad.addColorStop(0,`rgba(255,255,255,${s.opacity})`);
+            grad.addColorStop(1,'rgba(255,255,255,0)');
+            this.ctx.beginPath();
+            this.ctx.moveTo(s.x,s.y);
+            this.ctx.lineTo(s.x-s.len,s.y-s.len*0.3);
+            this.ctx.strokeStyle = grad;
+            this.ctx.lineWidth = 2*s.opacity;
+            this.ctx.stroke();
+            this.ctx.lineWidth = 0.5;
+        });
+    }
+    animate(t=0) {
+        this.update(t);
+        this.draw(t);
+        requestAnimationFrame(tt => this.animate(tt*0.001));
+    }
+}
+
+/* ===== CLOCK ===== */
+function updateClock() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = now.getMinutes(), s = now.getSeconds();
+    if(!state.is24Hour) h = h%12||12;
+    document.getElementById('clockDisplay').textContent =
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+    document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US',opts);
+    const hr=now.getHours();
+    let g='Good Evening';
+    if(hr<12) g='Good Morning'; else if(hr<18) g='Good Afternoon';
+    document.getElementById('greeting').textContent=g;
+}
+
+/* ===== STOPWATCH ===== */
+function updateStopwatchDisplay() {
+    const t = state.stopwatchTime;
+    const h = Math.floor(t/3600000);
+    const m = Math.floor((t%3600000)/60000);
+    const s = Math.floor((t%60000)/1000);
+    const ms = t%1000;
+
+    const mainStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const msStr = String(ms).padStart(3,'0');
+
+    const mainEl = document.getElementById('swMain');
+    const msEl = document.getElementById('swMs');
+
+    // Flash main on second change
+    if(s !== state.lastSwSeconds) {
+        state.lastSwSeconds = s;
+        mainEl.classList.remove('tick');
+        void mainEl.offsetWidth;
+        mainEl.classList.add('tick');
+    }
+    mainEl.textContent = mainStr;
+    msEl.textContent = msStr;
+
+    // Precision bar (ms progress within second)
+    document.getElementById('swPrecisionFill').style.width = (ms/10)+'%';
+}
+
+function startStopwatch() {
+    if(state.stopwatchRunning) return;
+    state.stopwatchRunning=true;
+    const start = Date.now()-state.stopwatchTime;
+    state.stopwatchInterval = setInterval(()=>{
+        state.stopwatchTime=Date.now()-start;
+        updateStopwatchDisplay();
+    },10);
+}
+function pauseStopwatch() {
+    state.stopwatchRunning=false;
+    clearInterval(state.stopwatchInterval);
+    state.stopwatchInterval=null;
+}
+function resetStopwatch() {
+    pauseStopwatch();
+    state.stopwatchTime=0; state.laps=[];
+    state.lastSwSeconds=-1;
+    updateStopwatchDisplay();
+    document.getElementById('lapsContainer').innerHTML='';
+    document.getElementById('swPrecisionFill').style.width='0%';
+}
+function addLap() {
+    if(!state.stopwatchRunning) return;
+    state.laps.push(state.stopwatchTime);
+    const t=state.stopwatchTime;
+    const h=Math.floor(t/3600000),m=Math.floor((t%3600000)/60000),s=Math.floor((t%60000)/1000),ms=t%1000;
+    const lapTime=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+    const el=document.createElement('div');
+    el.className='lap-item';
+    el.innerHTML=`<span class="lap-num">LAP ${state.laps.length}</span><span class="lap-time">${lapTime}</span>`;
+    document.getElementById('lapsContainer').prepend(el);
+}
+
+/* ===== TIMER ===== */
+function updateTimerDisplay() {
+    const h=Math.floor(state.timerTime/3600),m=Math.floor((state.timerTime%3600)/60),s=state.timerTime%60;
+    document.getElementById('timerDisplay').textContent=
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function startTimer() {
+    if(state.timerRunning) return;
+    if(state.timerTime===0) {
+        const h=parseInt(document.getElementById('timerHours').value)||0;
+        const m=parseInt(document.getElementById('timerMinutes').value)||0;
+        const s=parseInt(document.getElementById('timerSeconds').value)||0;
+        state.timerTime=h*3600+m*60+s;
+        state.timerInitialTime=state.timerTime;
+        if(!state.timerTime) return;
+    }
+    state.timerRunning=true;
+    state.timerInterval=setInterval(()=>{
+        state.timerTime--;
+        updateTimerDisplay();
+        if(state.timerTime<=0){pauseTimer();showAlarm();}
+    },1000);
+}
+function pauseTimer(){state.timerRunning=false;clearInterval(state.timerInterval);state.timerInterval=null;}
+function resetTimer(){
+    pauseTimer();state.timerTime=0;updateTimerDisplay();
+    ['timerHours','timerMinutes','timerSeconds'].forEach(id=>document.getElementById(id).value='0');
+}
+function showAlarm(){
+    document.getElementById('alarmOverlay').classList.add('active');
+    if(state.soundEnabled) playAlarmSound();
+}
+function dismissAlarm(){document.getElementById('alarmOverlay').classList.remove('active');}
+function playAlarmSound(){
+    try{
+        const ctx=new(window.AudioContext||window.webkitAudioContext)();
+        [0,0.25,0.5,0.75].forEach(t=>{
+            const o=ctx.createOscillator(),g=ctx.createGain();
+            o.connect(g);g.connect(ctx.destination);
+            o.frequency.value=880-(t*200); o.type='sine';
+            g.gain.setValueAtTime(0,ctx.currentTime+t);
+            g.gain.linearRampToValueAtTime(0.3,ctx.currentTime+t+0.05);
+            g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+t+0.4);
+            o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+0.5);
+        });
+    } catch(e){}
+}
+
+/* ===== MODE SWITCHING ===== */
+function switchMode(mode) {
+    state.currentMode=mode;
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===mode));
+    document.getElementById('clockMode').style.display='none';
+    document.getElementById('stopwatchMode').classList.remove('active');
+    document.getElementById('timerMode').classList.remove('active');
+    if(mode==='clock') document.getElementById('clockMode').style.display='flex';
+    else if(mode==='stopwatch') document.getElementById('stopwatchMode').classList.add('active');
+    else document.getElementById('timerMode').classList.add('active');
+}
+
+/* ===== THEME ===== */
+function applyTheme(theme) {
+    state.currentTheme=theme;
+    document.body.classList.remove('theme-aurora','theme-cyberpunk','theme-amoled','theme-galaxy','theme-sunset','theme-liquid');
+    document.body.classList.add(`theme-${theme}`);
+    const themes={
+        aurora:   {a1:'#00ffff',a2:'#00ff88',a3:'#0088ff',s:'rgba(0,255,255,0.35)'},
+        cyberpunk:{a1:'#ff00ff',a2:'#00ffff',a3:'#ffff00',s:'rgba(255,0,255,0.35)'},
+        amoled:   {a1:'#00ff80',a2:'#00ffff',a3:'#80ff00',s:'rgba(0,255,128,0.35)'},
+        galaxy:   {a1:'#6688ff',a2:'#aa66ff',a3:'#ff66cc',s:'rgba(102,136,255,0.35)'},
+        sunset:   {a1:'#ff6b6b',a2:'#ffa500',a3:'#ffdd00',s:'rgba(255,107,107,0.35)'},
+        liquid:   {a1:'#00d4ff',a2:'#0099ff',a3:'#0055ff',s:'rgba(0,212,255,0.35)'}
+    };
+    const c=themes[theme];
+    document.documentElement.style.setProperty('--accent-1',c.a1);
+    document.documentElement.style.setProperty('--accent-2',c.a2);
+    document.documentElement.style.setProperty('--accent-3',c.a3);
+    document.documentElement.style.setProperty('--shadow-color',c.s);
+    document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
+}
+
+/* ===== CONTROLS ===== */
+function toggleFormat(){
+    state.is24Hour=!state.is24Hour;
+    const b=document.getElementById('formatToggle');
+    b.textContent=state.is24Hour?'24H':'12H';
+    b.classList.toggle('active',state.is24Hour);
+    updateClock();
+}
+function toggleFullscreen(){
+    if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen();
+        document.getElementById('fullscreenToggle').textContent='ON';
+        document.getElementById('fullscreenToggle').classList.add('active');
+    } else {
+        document.exitFullscreen();
+        document.getElementById('fullscreenToggle').textContent='OFF';
+        document.getElementById('fullscreenToggle').classList.remove('active');
+    }
+}
+function toggleParticles(){
+    state.particlesEnabled=!state.particlesEnabled;
+    const b=document.getElementById('particlesToggle');
+    b.textContent=state.particlesEnabled?'ON':'OFF';
+    b.classList.toggle('active',state.particlesEnabled);
+}
+function toggleMouseGlow(){
+    state.mouseGlowEnabled=!state.mouseGlowEnabled;
+    const b=document.getElementById('mouseGlowToggle');
+    b.textContent=state.mouseGlowEnabled?'ON':'OFF';
+    b.classList.toggle('active',state.mouseGlowEnabled);
+    document.getElementById('mouseGlow').style.opacity=state.mouseGlowEnabled?'0.12':'0';
+}
+function updateGlowIntensity(v){
+    state.glowIntensity=v;
+    document.documentElement.style.setProperty('--glow-intensity',v);
+    document.getElementById('glowValue').textContent=v.toFixed(1);
+}
+function setFont(font){
+    state.currentFont=font;
+    document.documentElement.style.setProperty('--font-main',`'${font}', monospace`);
+    ['Orbitron','Audiowide','Electrolize'].forEach(f=>{
+        document.getElementById(`font${f}`).classList.toggle('active',f===font);
+    });
+}
+function toggleSound(){
+    state.soundEnabled=!state.soundEnabled;
+    const b=document.getElementById('soundToggle');
+    b.textContent=state.soundEnabled?'ON':'OFF';
+    b.classList.toggle('active',state.soundEnabled);
+}
+
+/* ===== MOUSE GLOW ===== */
+function setupMouseGlow(){
+    const g=document.getElementById('mouseGlow');
+    const move=e=>{
+        if(!state.mouseGlowEnabled) return;
+        const x=e.clientX||e.touches?.[0]?.clientX;
+        const y=e.clientY||e.touches?.[0]?.clientY;
+        if(x&&y){g.style.left=x+'px';g.style.top=y+'px';}
+    };
+    document.addEventListener('mousemove',move,{passive:true});
+    document.addEventListener('touchmove',move,{passive:true});
+}
+
+/* ===== EVENT LISTENERS ===== */
+function setupEventListeners(){
+    document.querySelectorAll('.mode-tab').forEach(t=>t.addEventListener('click',()=>switchMode(t.dataset.mode)));
+    document.getElementById('stopwatchStart').addEventListener('click',startStopwatch);
+    document.getElementById('stopwatchPause').addEventListener('click',pauseStopwatch);
+    document.getElementById('stopwatchReset').addEventListener('click',resetStopwatch);
+    document.getElementById('stopwatchLap').addEventListener('click',addLap);
+    document.getElementById('timerStart').addEventListener('click',startTimer);
+    document.getElementById('timerPause').addEventListener('click',pauseTimer);
+    document.getElementById('timerReset').addEventListener('click',resetTimer);
+    document.getElementById('alarmDismiss').addEventListener('click',dismissAlarm);
+    const toggle=document.getElementById('controlToggle');
+    const menu=document.getElementById('controlMenu');
+    toggle.addEventListener('click',()=>menu.classList.toggle('active'));
+    document.addEventListener('click',e=>{
+        if(!toggle.contains(e.target)&&!menu.contains(e.target)) menu.classList.remove('active');
+    });
+    document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.theme)));
+    document.getElementById('formatToggle').addEventListener('click',toggleFormat);
+    document.getElementById('fullscreenToggle').addEventListener('click',toggleFullscreen);
+    document.getElementById('particlesToggle').addEventListener('click',toggleParticles);
+    document.getElementById('mouseGlowToggle').addEventListener('click',toggleMouseGlow);
+    document.getElementById('soundToggle').addEventListener('click',toggleSound);
+    document.getElementById('glowSlider').addEventListener('input',e=>updateGlowIntensity(parseFloat(e.target.value)));
+    document.getElementById('fontOrbitron').addEventListener('click',()=>setFont('Orbitron'));
+    document.getElementById('fontAudiowide').addEventListener('click',()=>setFont('Audiowide'));
+    document.getElementById('fontElectrolize').addEventListener('click',()=>setFont('Electrolize'));
+}
+
+/* ===== INIT ===== */
+function init(){
+    buildBackground();
+    const ps = new ParticleSystem(document.getElementById('particles'));
+    ps.animate();
+    setupEventListeners();
+    setupMouseGlow();
+    applyTheme('aurora');
+    updateClock();
+    setInterval(updateClock,1000);
+    updateStopwatchDisplay();
+    updateTimerDisplay();
+    setTimeout(()=>{
+        const ss=document.getElementById('startup-screen');
+        if(ss) ss.style.display='none';
+    },3400);
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+else init();
+</script>
+</body>
+</html>
